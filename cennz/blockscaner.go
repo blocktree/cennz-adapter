@@ -700,7 +700,7 @@ func (bs *CENNZBlockScanner) extractTxInput(trx *Transaction, result *ExtractRes
 			input.TxID = result.TxID
 			input.Address = addr
 			//transaction.AccountID = a.AccountID
-			input.Amount = amount.String()
+			input.Amount = trxDetail.Amount
 			input.Coin = openwallet.Coin{
 				Symbol:     bs.wm.Symbol(),
 				IsContract: true,
@@ -741,7 +741,7 @@ func (bs *CENNZBlockScanner) extractTxInput(trx *Transaction, result *ExtractRes
 		if af == nil {
 			af = make([]string, 0)
 		}
-		af = append(af, addr+":"+amount.String())
+		af = append(af, addr+":"+trxDetail.Amount)
 		from[token.Symbol] = af
 
 		totalAmount = totalAmount.Add(amount) //用于计算手续费
@@ -791,7 +791,7 @@ func (bs *CENNZBlockScanner) extractTxOutput(trx *Transaction, result *ExtractRe
 			outPut := openwallet.TxOutPut{}
 			outPut.TxID = txid
 			outPut.Address = addr
-			outPut.Amount = amount.String()
+			outPut.Amount = trxDetail.Amount
 			outPut.Coin = openwallet.Coin{
 				Symbol:     bs.wm.Symbol(),
 				IsContract: true,
@@ -832,7 +832,7 @@ func (bs *CENNZBlockScanner) extractTxOutput(trx *Transaction, result *ExtractRe
 		if af == nil {
 			af = make([]string, 0)
 		}
-		af = append(af, addr+":"+amount.String())
+		af = append(af, addr+":"+trxDetail.Amount)
 		to[token.Symbol] = af
 
 		totalAmount = totalAmount.Add(amount)
