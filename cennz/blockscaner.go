@@ -156,10 +156,10 @@ func (bs *CENNZBlockScanner) ScanBlockTask() {
 			break
 		}
 
-		if localBlock.Finalized==false {
-			bs.wm.Log.Std.Info("localBlock is not finalized, height : %d ", localBlock.Height)
-			break
-		}
+		//if localBlock.Finalized==false {
+		//	bs.wm.Log.Std.Info("localBlock is not finalized, height : %d ", localBlock.Height)
+		//	break
+		//}
 
 		isFork := false
 
@@ -710,6 +710,8 @@ func (bs *CENNZBlockScanner) extractTxInput(trx *Transaction, result *ExtractRes
 					Address:    token.Address,
 					Symbol:     bs.wm.Symbol(),
 					Token:      token.Symbol,
+					Name:       token.Name,
+					Decimals:   token.Decimals,
 				},
 			}
 			input.Index = uint64(i)
@@ -797,7 +799,10 @@ func (bs *CENNZBlockScanner) extractTxOutput(trx *Transaction, result *ExtractRe
 				Contract: openwallet.SmartContract{
 					ContractID: contractId,
 					Address:    token.Address,
-					Symbol:     token.Symbol,
+					Symbol:     bs.wm.Symbol(),
+					Token:      token.Symbol,
+					Name:       token.Name,
+					Decimals:   token.Decimals,
 				},
 			}
 			outPut.Index = n
