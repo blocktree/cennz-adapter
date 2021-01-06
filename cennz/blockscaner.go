@@ -684,7 +684,7 @@ func (bs *CENNZBlockScanner) extractTxInput(trx *Transaction, result *ExtractRes
 		}
 
 		amount, _ := decimal.NewFromString( trxDetail.Amount )
-		amount = amount.Shift(- int32(token.Decimals) )
+		amount = amount.Shift( -int32(token.Decimals) )
 		addr := trxDetail.Addr
 		targetResult := scanTargetFunc(openwallet.ScanTargetParam{
 			ScanTarget:     addr,
@@ -700,7 +700,7 @@ func (bs *CENNZBlockScanner) extractTxInput(trx *Transaction, result *ExtractRes
 			input.TxID = result.TxID
 			input.Address = addr
 			//transaction.AccountID = a.AccountID
-			input.Amount = trxDetail.Amount
+			input.Amount = amount.String()
 			input.Coin = openwallet.Coin{
 				Symbol:     bs.wm.Symbol(),
 				IsContract: true,
@@ -739,7 +739,7 @@ func (bs *CENNZBlockScanner) extractTxInput(trx *Transaction, result *ExtractRes
 		if af == nil {
 			af = make([]string, 0)
 		}
-		af = append(af, addr+":"+trxDetail.Amount)
+		af = append(af, addr+":"+amount.String())
 		from[token.Symbol] = af
 
 		totalAmount = totalAmount.Add(amount) //用于计算手续费
@@ -775,7 +775,7 @@ func (bs *CENNZBlockScanner) extractTxOutput(trx *Transaction, result *ExtractRe
 		}
 
 		amount, _ := decimal.NewFromString( trxDetail.Amount )
-		amount = amount.Shift(-bs.wm.Decimal())
+		amount = amount.Shift(- int32(token.Decimals) )
 		n := uint64(i)
 		addr := trxDetail.Addr
 		targetResult := scanTargetFunc(openwallet.ScanTargetParam{
@@ -789,7 +789,7 @@ func (bs *CENNZBlockScanner) extractTxOutput(trx *Transaction, result *ExtractRe
 			outPut := openwallet.TxOutPut{}
 			outPut.TxID = txid
 			outPut.Address = addr
-			outPut.Amount = trxDetail.Amount
+			outPut.Amount = amount.String()
 			outPut.Coin = openwallet.Coin{
 				Symbol:     bs.wm.Symbol(),
 				IsContract: true,
@@ -827,7 +827,7 @@ func (bs *CENNZBlockScanner) extractTxOutput(trx *Transaction, result *ExtractRe
 		if af == nil {
 			af = make([]string, 0)
 		}
-		af = append(af, addr+":"+trxDetail.Amount)
+		af = append(af, addr+":"+amount.String())
 		to[token.Symbol] = af
 
 		totalAmount = totalAmount.Add(amount)
