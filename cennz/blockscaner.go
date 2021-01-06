@@ -692,7 +692,7 @@ func (bs *CENNZBlockScanner) extractTxInput(trx *Transaction, result *ExtractRes
 			ScanTargetType: openwallet.ScanTargetTypeAccountAddress})
 		if targetResult.Exist {
 
-			contractId := openwallet.GenContractID(bs.wm.Symbol(), token.Symbol)
+			contractId := openwallet.GenContractID(bs.wm.Symbol(), token.Address)
 
 			input := openwallet.TxInput{}
 			input.SourceTxID = txid
@@ -786,7 +786,7 @@ func (bs *CENNZBlockScanner) extractTxOutput(trx *Transaction, result *ExtractRe
 			ScanTargetType: openwallet.ScanTargetTypeAccountAddress})
 		if targetResult.Exist {
 
-			contractId := openwallet.GenContractID(bs.wm.Symbol(), token.Symbol)
+			contractId := openwallet.GenContractID(bs.wm.Symbol(), token.Address)
 
 			outPut := openwallet.TxOutPut{}
 			outPut.TxID = txid
