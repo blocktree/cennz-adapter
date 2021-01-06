@@ -156,10 +156,10 @@ func (bs *CENNZBlockScanner) ScanBlockTask() {
 			break
 		}
 
-		//if localBlock.Finalized==false {
-		//	bs.wm.Log.Std.Info("localBlock is not finalized, height : %d ", localBlock.Height)
-		//	break
-		//}
+		if localBlock.Finalized==false {
+			bs.wm.Log.Std.Info("localBlock is not finalized, height : %d ", localBlock.Height)
+			break
+		}
 
 		isFork := false
 
