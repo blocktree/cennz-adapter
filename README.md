@@ -31,6 +31,9 @@ https://cennznet.io/
 
 https://uncoverexplorer.com/
 
+Node安装
+
+https://github.com/cennznet/cennznet
 
 接口文档
 
@@ -38,12 +41,12 @@ https://github.com/polkadot-js/apps
 
 https://github.com/polkadot-js/common
 
-https://github.com/paritytech/substrate-api-sidecar
+https://github.com/cennznet/api.js/blob/develop/docs/cennznet/rpc.md
 
 
 公共API
 
-https://github.com/paritytech/substrate-api-sidecar/
+https://github.com/cennznet/CENNZnet-explorer-API
 
 精度 : 4, 确认数 100
 目前链上手续费0.011，推荐收取商户0.05(mxc:0.1)

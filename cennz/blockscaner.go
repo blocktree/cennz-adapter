@@ -156,6 +156,11 @@ func (bs *CENNZBlockScanner) ScanBlockTask() {
 			break
 		}
 
+		if localBlock.Finalized==false {
+			bs.wm.Log.Std.Info("localBlock is not finalized, height : %d ", localBlock.Height)
+			break
+		}
+
 		isFork := false
 
 		//判断hash是否上一区块的hash

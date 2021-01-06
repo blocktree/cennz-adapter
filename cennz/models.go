@@ -69,6 +69,7 @@ type Block struct {
 	Timestamp     uint64        `json:"timestamp"`
 	Height        uint64        `json:"height"`
 	Transactions  []Transaction `json:"transactions"`
+	Finalized      bool          `json:"finalized"`
 }
 
 type Extrinsic struct {
@@ -158,6 +159,7 @@ func NewBlock(json *gjson.Result, symbol string) *Block {
 	obj.PrevBlockHash = gjson.Get(json.Raw, "parent_hash").String()
 	obj.Height = gjson.Get(json.Raw, "block_num").Uint()
 	obj.Timestamp = gjson.Get(json.Raw, "block_timestamp").Uint()
+	obj.Finalized = gjson.Get(json.Raw, "finalized").Bool()
 	obj.Transactions = GetTransactionInBlock(json, symbol)
 
 	if obj.Hash == "" {
