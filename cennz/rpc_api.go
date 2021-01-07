@@ -98,7 +98,6 @@ func isError(result *gjson.Result) error {
 	return err
 }
 
-// 获取当前最高区块
 func (c *RpcClient) GetRuntimeVersion() (*RuntimeVersion, error) {
 	method := "state_getRuntimeVersion"
 
@@ -151,6 +150,22 @@ func (c *RpcClient) sendTransaction(rawTx string) (string, error) {
 
 	if resp.Get("error").String() != "" && resp.Get("cause").String() != "" {
 		return "", errors.New("Submit transaction with error: " + resp.Get("error").String() + "," + resp.Get("cause").String())
+	}
+
+	return resp.String(), nil
+}
+
+// 获取当前最高区块
+func (c *RpcClient) GetBlockHash(height uint64) (string, error) {
+	method := "chain_getBlockHash"
+
+	params := []interface{}{
+		height,
+	}
+
+	resp, err := c.Call(method, params)
+	if err != nil {
+		return "", err
 	}
 
 	return resp.String(), nil

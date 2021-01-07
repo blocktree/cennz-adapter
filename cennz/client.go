@@ -1,5 +1,7 @@
 package cennz
 
+import "errors"
+
 const APIClientHttpMode = "http"
 
 type ApiClient struct {
@@ -59,6 +61,15 @@ func (c *ApiClient) getBlockByHeight(height uint64) (*Block, error) {
 	)
 	if c.APIChoose == APIClientHttpMode {
 		block, err = c.Client.getBlockByHeight(height)
+
+		hashInRpc, err := c.RpcClient.GetBlockHash(height)
+		if err != nil {
+			return nil, err
+		}
+
+		if hashInRpc!=block.Hash {
+			return nil, errors.New("wrong block, rpc :" + hashInRpc + ", http : " + block.Hash )
+		}
 	}
 
 	return block, err
