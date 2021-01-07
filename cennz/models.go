@@ -194,14 +194,15 @@ func GetTransactionInBlock(json *gjson.Result, symbol string) []Transaction {
 		call_module := gjson.Get(extrinsicJSON.Raw, "call_module").String()
 		call_module_function := gjson.Get(extrinsicJSON.Raw, "call_module_function").String()
 		success := gjson.Get(extrinsicJSON.Raw, "success").Bool()
-		finalized := gjson.Get(extrinsicJSON.Raw, "finalized").Bool()
+		//finalized := gjson.Get(extrinsicJSON.Raw, "finalized").Bool()
 		paramsStr := gjson.Get(extrinsicJSON.Raw, "params").String()
 
 		txid := gjson.Get(extrinsicJSON.Raw, "extrinsic_hash").String()
 
 		//log.Debug("call_module : ", call_module, "call_module_function : ", call_module_function, ", txid : ", txid, ", finalized : ", finalized, ", success : ", success, ", paramsStr : ", paramsStr)
 
-		if !success || !finalized{
+		//if !success || !finalized{
+		if !success{
 			continue
 		}
 
@@ -284,10 +285,11 @@ func GetTransactionInBlock(json *gjson.Result, symbol string) []Transaction {
 	for _, eventJSON := range gjson.Get(json.Raw, "events").Array() {
 		module_id := gjson.Get(eventJSON.Raw, "module_id").String()
 		event_id := gjson.Get(eventJSON.Raw, "event_id").String()
-		finalized := gjson.Get(eventJSON.Raw, "finalized").Bool()
+		//finalized := gjson.Get(eventJSON.Raw, "finalized").Bool()
 
 		isSimpleTransfer := module_id=="genericAsset" && event_id=="Transferred"
-		if isSimpleTransfer && finalized {
+		//if isSimpleTransfer && finalized {
+		if isSimpleTransfer {
 			extrinsic_hash := gjson.Get(eventJSON.Raw, "extrinsic_hash").String()
 			extrinsic, ok := extrinsicMap[extrinsic_hash]
 			if ok {
