@@ -339,6 +339,8 @@ func (decoder *TransactionDecoder) CreateTokenSummaryRawTransaction(wrapper open
 		tmpNonce           uint64
 	)
 
+	sumTokenMap := make(map[string]string)
+
 	// 如果有提供手续费账户，检查账户是否存在
 	if feesAcount := sumRawTx.FeesSupportAccount; feesAcount != nil {
 		account, supportErr := wrapper.GetAssetsAccountInfo(feesAcount.AccountID)
@@ -492,6 +494,15 @@ func (decoder *TransactionDecoder) CreateTokenSummaryRawTransaction(wrapper open
 			}
 		}
 
+		if sumRawTx.Coin.Contract.Address == decoder.wm.GetFeeToken().Address {  //把手续费汇总走的时候
+			_, found := sumTokenMap[ addrBalance.Balance.Address ]  //此次循环参与过汇总
+			if found {
+				if sumAmount.Sub( fees ).Cmp( decimal.Zero ) > 0 {
+					sumAmount = sumAmount.Sub( fees )
+				}
+			}
+		}
+
 		decoder.wm.Log.Debugf("balance: %v", addrBalance.Balance.Balance)
 		decoder.wm.Log.Debugf("%s fees: %v", sumRawTx.Coin.Symbol, fees)
 		decoder.wm.Log.Debugf("sumAmount: %v", sumAmount)
@@ -522,6 +533,8 @@ func (decoder *TransactionDecoder) CreateTokenSummaryRawTransaction(wrapper open
 			RawTx: rawTx,
 			Error: createTxErr,
 		}
+
+		sumTokenMap[ addrBalance.Balance.Address ] = addrBalance.Balance.Address //标明这个地址，此次操作，汇总过
 
 		//创建成功，添加到队列
 		rawTxArray = append(rawTxArray, rawTxWithErr)
