@@ -4,7 +4,7 @@ package cennzTransaction
 const calPeriod = 64
 
 func GetEra(height uint64) []byte {
-
+	//return []byte{}
 	return []byte{0x0}
 
 	//phase := height % calPeriod

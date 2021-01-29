@@ -3,7 +3,6 @@ package cennzTransaction
 import (
 	"encoding/hex"
 	"errors"
-	"github.com/blocktree/go-owcdrivers/polkadotTransaction/codec"
 )
 
 type MethodTransfer struct {
@@ -21,7 +20,7 @@ func NewMethodTransfer(pubkey string, amount, assetId uint64) (*MethodTransfer, 
 	if amount == 0 {
 		return nil, errors.New("zero amount")
 	}
-	amountStr, err := codec.Encode("Compact<u32>", amount)
+	amountStr := Encode( uint64(amount) )
 	if err != nil {
 		return nil, errors.New("invalid amount")
 	}
@@ -30,7 +29,7 @@ func NewMethodTransfer(pubkey string, amount, assetId uint64) (*MethodTransfer, 
 	if assetId == 0 {
 		return nil, errors.New("zero assetId")
 	}
-	assetIdStr, err := codec.EncodeOld("Compact<u32>", assetId)
+	assetIdStr := Encode( uint64(assetId) )
 	if err != nil {
 		return nil, errors.New("invalid assetId")
 	}

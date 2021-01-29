@@ -4,25 +4,29 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
-	"github.com/blocktree/go-owcdrivers/polkadotTransaction/codec"
 	"testing"
 )
 
-//0x04040101fa2b41e0bf3969544b2cfe52908c7f60499450386649cf01d1fd86a56c4fd2d46304
+// 0xa0 0401 04 7dd904f18b1e42c7f2b62429245771f51749a42be06c02bd4251df69f2c141df 0350dc88f400 30000025000000050000000d0971c150a9741b8719b3c6c9c2e96ec5b2e3fb83641af868e6650f3e263ef00d0971c150a9741b8719b3c6c9c2e96ec5b2e3fb83641af868e6650f3e263ef0
+//      0401 04 7dd904f18b1e42c7f2b62429245771f51749a42be06c02bd4251df69f2c141df 0750dc88f400 0010000025000000050000000d0971c150a9741b8719b3c6c9c2e96ec5b2e3fb83641af868e6650f3e263ef00d0971c150a9741b8719b3c6c9c2e96ec5b2e3fb83641af868e6650f3e263ef0
 
+// 0x39028488dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee00ec59fa45d747eeaca87ff82fb7cd41137fcc976f6da4e010e46cc337d0033f1171a8b38f2692d467ba1019b7cbd66959ae3b1e632308ea4a5a2dd2ab27818f0c003000000401047dd904f18b1e42c7f2b62429245771f51749a42be06c02bd4251df69f2c141df0327ee88f4
+// 0x3d028486377c388ec1afc558ef40c5edb3b4f7bba1a697b1bb711ece23fc7cdbfe2e1f0054c9cc865e71f4da69821dee315fe9fc01c422d954128740a76123c78392ecb2ff69eeaf6c307f133c8f4728f8e7958fbb39d8a3cb603f12482f2ebfaeada501001000000401047dd904f18b1e42c7f2b62429245771f51749a42be06c02bd4251df69f2c141df0727ee88f400
+
+// 5F6gkpLsrdFaWtUu4UH87qFJtRJb5DpLuN7UaDkspDwNef5D -> 5EuiJzHg1uGqPN5Rf28tdNSRzC8G6RoEJFHb44Z9rnkaze6d
 func Test_CENNZ_transaction(t *testing.T) {
 
 	tx := TxStruct{
 		//发送方公钥
-		SenderPubkey:    "xxxx",//"xxxx",
+		SenderPubkey:    "86377c388ec1afc558ef40c5edb3b4f7bba1a697b1bb711ece23fc7cdbfe2e1f",//"88dc3417d5058ec4b4503e0c12ea1a0a89be200fe98922423d4334014fa6b0ee",
 		//接收方公钥
-		RecipientPubkey: "xxxx",
+		RecipientPubkey: "7dd904f18b1e42c7f2b62429245771f51749a42be06c02bd4251df69f2c141df",
 		//发送金额（最小单位）
-		Amount:          20000,
+		Amount:         4102613579,
 		//资产ID
-		AssetId:         2,
+		AssetId:         1,
 		//nonce
-		Nonce:           8,
+		Nonce:           7,
 		//手续费（最小单位）
 		Fee:             0,
 		Tip:             0,
@@ -48,7 +52,7 @@ func Test_CENNZ_transaction(t *testing.T) {
 	fmt.Println("待签消息 ： ",message)
 
 	// 签名
-	prikey, _ := hex.DecodeString("xxxx")
+	prikey, _ := hex.DecodeString("e86bcaaab0a5aa5e3f3b0885db7e932e34eddb5a620b6bcc097a4b236a5a0354")
 	signature, err := SignTransaction(message, prikey)
 	if err != nil {
 		t.Error("sign failed")
@@ -86,8 +90,8 @@ func Test_json(t *testing.T)  {
 }
 
 func Test_decode(t *testing.T) {
-	en, _ := codec.Encode(Compact_U32, uint64(139))
-	fmt.Println(en)
+	//en, _ := codec.Encode(Compact_U32, uint64(139))
+	//fmt.Println(en)
 }
 
 func Test_Verify(t *testing.T){
