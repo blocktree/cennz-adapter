@@ -170,3 +170,17 @@ func (c *RpcClient) GetBlockHash(height uint64) (string, error) {
 
 	return resp.String(), nil
 }
+
+func (c *RpcClient) GetFinalizedHead() (string, error) {
+	method := "chain_getFinalizedHead"
+
+	params := []interface{}{
+	}
+
+	resp, err := c.Call(method, params)
+	if err != nil {
+		return "", err
+	}
+
+	return resp.String(), nil
+}

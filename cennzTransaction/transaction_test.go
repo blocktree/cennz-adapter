@@ -22,11 +22,11 @@ func Test_CENNZ_transaction(t *testing.T) {
 		//接收方公钥
 		RecipientPubkey: "7dd904f18b1e42c7f2b62429245771f51749a42be06c02bd4251df69f2c141df",
 		//发送金额（最小单位）
-		Amount:         4102613579,
+		Amount:         1303822400,
 		//资产ID
 		AssetId:         1,
 		//nonce
-		Nonce:           7,
+		Nonce:           8,
 		//手续费（最小单位）
 		Fee:             0,
 		Tip:             0,

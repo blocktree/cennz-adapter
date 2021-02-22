@@ -151,6 +151,7 @@ func (wm *WalletManager) GetSmartContractDecoder() openwallet.SmartContractDecod
 func (wm *WalletManager) LoadAssetsConfig(c config.Configer) error {
 
 	wm.Config.NodeAPI = c.String("nodeAPI")
+	wm.Config.BalanceAPI = c.String("balanceAPI")
 	wm.Config.RpcAPI = c.String("rpcAPI")
 	wm.Config.WSAPI = c.String("wsAPI")
 	wm.Config.APIChoose = c.String("apiChoose")

@@ -7,6 +7,7 @@ const APIClientHttpMode = "http"
 type ApiClient struct {
 	Client    *Client
 	RpcClient *RpcClient
+	BalanceApiClient *BalanceApiClient
 	APIChoose string
 }
 
@@ -19,6 +20,7 @@ func NewApiClient(wm *WalletManager) error {
 	api.APIChoose = wm.Config.APIChoose
 	if api.APIChoose == APIClientHttpMode {
 		api.Client = NewClient(wm.Config.NodeAPI, false, wm.Symbol() )
+		api.BalanceApiClient = NewBalanceClient(wm.Config.BalanceAPI, false, wm.Symbol())
 		api.RpcClient = NewRpcClient(wm.Config.RpcAPI, false, wm.Symbol() )
 	}
 
@@ -49,6 +51,13 @@ func (c *ApiClient) getBalance(address string, assetId string) (*AddrBalance, er
 
 	if c.APIChoose == APIClientHttpMode {
 		balance, err = c.Client.getBalance(address, assetId)
+
+		finalizedHeadBlockHash, err := c.RpcClient.GetFinalizedHead()
+		if err != nil {
+			return nil, err
+		}
+
+		balance, err = c.BalanceApiClient.getApiBalance(balance, finalizedHeadBlockHash)
 	}
 
 	return balance, err

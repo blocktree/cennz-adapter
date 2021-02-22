@@ -53,6 +53,8 @@ type WalletConfig struct {
 	backupDir string
 	// node API
 	NodeAPI string
+	// balance API
+	BalanceAPI string
 	// rpc API
 	RpcAPI string
 	// websocket API
