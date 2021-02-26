@@ -1156,10 +1156,15 @@ func (bs *CENNZBlockScanner) GetBalanceByAddress(address ...string) ([]*openwall
 			return nil, err
 		}
 
+		balanceUint := uint64(0)
+		if balance!=nil && balance.Balance!=nil {
+			balanceUint = uint64(balance.Balance.Int64())
+		}
+
 		addrsBalance = append(addrsBalance, &openwallet.Balance{
 			Symbol:  bs.wm.Symbol(),
 			Address: addr,
-			Balance: convertToAmount(uint64(balance.Balance.Int64()), 4),
+			Balance: convertToAmount(balanceUint, 4),
 		})
 	}
 
