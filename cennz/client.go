@@ -51,6 +51,9 @@ func (c *ApiClient) getBalance(address string, assetId string) (*AddrBalance, er
 
 	if c.APIChoose == APIClientHttpMode {
 		balance, err = c.Client.getBalance(address, assetId)
+		if err != nil {
+			return nil, err
+		}
 
 		finalizedHeadBlockHash, err := c.RpcClient.GetFinalizedHead()
 		if err != nil {
