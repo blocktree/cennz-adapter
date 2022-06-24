@@ -116,6 +116,10 @@ func (c *BalanceApiClient) getApiBalance(addrBalance *AddrBalance, blockHash str
 
 // 获取地址余额，加上nonce
 func (c *BalanceApiClient) getApiBalanceWithNonce(address, blockHash, assetId string) (*AddrBalance, error) {
+	if assetId=="" {
+		assetId = "1"
+	}
+
 	addrBalance := &AddrBalance{
 		Address: address,
 		AssetId: assetId,

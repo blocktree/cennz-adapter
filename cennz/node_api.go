@@ -96,7 +96,7 @@ func (c *Client) PostCall(path string, v map[string]interface{}) (*gjson.Result,
 func (c *Client) GetCall(path string) (*gjson.Result, error) {
 
 	if c.Debug {
-		log.Debug("Start Request API...")
+		log.Debug("Start Request API... url : ", c.BaseURL+path)
 	}
 
 	r, err := req.Get(c.BaseURL + path)
