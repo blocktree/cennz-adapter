@@ -20,6 +20,7 @@ import (
 	"github.com/blocktree/openwallet/v2/log"
 	"github.com/imroc/req"
 	"github.com/tidwall/gjson"
+	"strconv"
 	"time"
 )
 
@@ -183,4 +184,44 @@ func (c *RpcClient) GetFinalizedHead() (string, error) {
 	}
 
 	return resp.String(), nil
+}
+
+// 获取当前最高高度
+func (c *RpcClient) getBlockHeight() (uint64, error) {
+	method := "chain_getHeader"
+
+	params := []interface{}{
+	}
+
+	resp, err := c.Call(method, params)
+	if err != nil {
+		return 0, err
+	}
+
+	numberStr := resp.Get("number").String()
+	if len(numberStr) > 2 {
+		numberStr = numberStr[2:]
+	}
+
+	//fmt.Println("number : ", numberStr)
+
+	result, err := strconv.ParseUint(numberStr, 16, 32)
+	if err != nil {
+		return 0, err
+	}
+
+	return result, nil
+}
+
+//获取当前最新高度的区块，只有高度
+func (c *RpcClient) getMostHeightBlock() (*Block, error) {
+	mostHeight, err := c.getBlockHeight()
+	if err != nil {
+		return nil, err
+	}
+
+	obj := &Block{}
+	obj.Height = mostHeight
+
+	return obj, nil
 }

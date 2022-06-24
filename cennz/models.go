@@ -83,6 +83,7 @@ type Extrinsic struct {
 	From        string
 	Fee         string
 	Status      string
+	Index       uint64
 }
 
 type Transaction struct {
@@ -168,6 +169,27 @@ func NewBlock(json *gjson.Result, symbol string) *Block {
 	return obj
 }
 
+func NewBlockFromRpc(json *gjson.Result, symbol string) (*Block, error) {
+	obj := &Block{}
+	// 解析
+	obj.Hash = gjson.Get(json.Raw, "hash").String()
+	obj.PrevBlockHash = gjson.Get(json.Raw, "parentHash").String()
+	obj.Height = gjson.Get(json.Raw, "number").Uint()
+	obj.Finalized = gjson.Get(json.Raw, "finalized").Bool()
+
+	transactions, blockTime, err := GetTransactionAndBlockTimeInBlock(json, symbol)
+	if err!=nil {
+		return nil, err
+	}
+	obj.Timestamp = blockTime
+	obj.Transactions = transactions
+
+	if obj.Hash == "" {
+		time.Sleep(5 * time.Second)
+	}
+	return obj, nil
+}
+
 //BlockHeader 区块链头
 func (b *Block) BlockHeader() *openwallet.BlockHeader {
 
@@ -178,6 +200,184 @@ func (b *Block) BlockHeader() *openwallet.BlockHeader {
 	obj.Height = b.Height
 
 	return &obj
+}
+
+func GetTransactionAndBlockTimeInBlock(json *gjson.Result, symbol string) ([]Transaction, uint64, error) {
+	transactions := make([]Transaction, 0)
+
+	blockHash := gjson.Get(json.Raw, "hash").String()
+	blockHeight := gjson.Get(json.Raw, "number").Uint()
+
+	blockTime := uint64(time.Now().Unix())
+
+	extrinsicMap := make(map[uint64]Extrinsic)	// key = extrinsicIndex, value = extrinsic
+	transactionMap := make(map[uint64]Transaction)    // key = extrinsicIndex, value = Transaction
+
+	for extrinsicIndex, extrinsicJSON := range gjson.Get(json.Raw, "extrinsics").Array() {
+		section := gjson.Get(extrinsicJSON.Raw, "section").String()
+		method := gjson.Get(extrinsicJSON.Raw, "method").String()
+		isSigned := gjson.Get(extrinsicJSON.Raw, "isSigned").Bool()
+		txid := gjson.Get(extrinsicJSON.Raw, "hash").String()
+		args := gjson.Get(extrinsicJSON.Raw, "args").Array()
+
+		log.Debug("section : ", section, "method : ", method, ", txid : ", txid, ", isSigned : ", isSigned, ", args : ", args)
+
+		//获取这个区块的时间
+		if section == "timestamp" && method=="set" {
+			args := gjson.Get(extrinsicJSON.Raw, "args")
+			if len(args.Raw) >0 {
+				blockTime = args.Array()[0].Uint()
+			}
+		}
+
+		if !isSigned {
+			continue
+		}
+
+		isSimpleTransfer := section=="genericAsset" && method=="transfer"
+		if isSimpleTransfer {
+			if len( args ) != 3{
+				log.Error("wrong extrinsic args length : ", txid)
+				continue
+			}
+
+			assetId := args[0].String()
+			to := args[1].String()
+			from := gjson.Get(extrinsicJSON.Raw, "signer").String()
+			amount := args[2].String()
+
+			if to=="" || amount=="" || assetId=="" || from==""{
+				log.Error("wrong txid : ", txid)
+				continue
+			}
+
+			toStr := to + ":" + amount + ":" + assetId
+
+			toArr := make([]string, 0)
+			toArr = append(toArr, toStr)
+			fee := gjson.Get(extrinsicJSON.Raw, "partialFee").String()
+
+			extrinsic := Extrinsic{
+				Extrinsic_hash:       txid,
+				Call_module:          section,
+				Call_module_function: method,
+				ToArr:                toArr,
+				ToDecArr:             nil,
+				From:                 from,
+				Fee:                  fee,
+				Status:               "0",
+				Index:                uint64(extrinsicIndex),
+			}
+
+			extrinsicMap[ uint64(extrinsicIndex) ] = extrinsic
+		}
+	}
+
+	for _, eventJSON := range gjson.Get(json.Raw, "events").Array() {
+		phase := gjson.Get(eventJSON.Raw, "phase")
+		if !phase.Exists() {
+			continue
+		}
+		extrinsicIndex := gjson.Get(phase.Raw, "applyExtrinsic").Uint()
+
+		eventIndex := gjson.Get(eventJSON.Raw, "index").String()
+		eventMethod := gjson.Get(eventJSON.Raw, "method").String()
+
+		if eventIndex=="0x0000" && eventMethod=="ExtrinsicSuccess" {	//指明，当前transaction的status可以改为1
+			transaction, ok := transactionMap[extrinsicIndex]
+			if ok {
+				transaction.Status = "1"
+				transactions = append(transactions, transaction)
+			}
+		}
+
+		if eventIndex=="0x0401" && eventMethod=="Transferred" {
+			extrinsic, ok := extrinsicMap[extrinsicIndex]
+			if ok {
+				if gjson.Get(eventJSON.Raw, "data").Exists()==false {
+					continue
+				}
+
+				data := gjson.Get(eventJSON.Raw, "data").Array()
+
+				if len(data) != 4{
+					log.Error("wrong event args length : ", extrinsic.Extrinsic_hash)
+					continue
+				}
+
+				assetId := data[0].String()
+				from := data[1].String()
+				to := data[2].String()
+				amount := data[3].String()
+
+				eventTo := to + ":" + amount + ":" + assetId
+
+				//普通转账，一个txid，只有一笔资金转账
+				if eventTo != extrinsic.ToArr[0]{
+					log.Error("failed txid : ", extrinsic.Extrinsic_hash)
+					continue
+				}
+
+				if from == "" {
+					log.Error("from not found txid : ", extrinsic.Extrinsic_hash)
+					continue
+				}
+
+				feeInt, feeErr := strconv.ParseInt(extrinsic.Fee, 10, 64)
+				amountInt, err := strconv.ParseInt(amount, 10, 64)
+				if err == nil  && feeErr == nil{
+					amountUint := uint64(amountInt)
+					fee := uint64(feeInt)
+
+					toTrxDetailArr := make([]TrxDetail, 0)
+					toTrxDetail := TrxDetail{
+						Addr:      to,
+						Amount:    amount,
+						AmountDec: "",
+						AssetId:   assetId,
+					}
+					toTrxDetailArr = append(toTrxDetailArr, toTrxDetail)
+
+					fromTrxDetailArr := make([]TrxDetail, 0)
+					fromTrxDetail := TrxDetail{
+						Addr:      from,
+						Amount:    amount,
+						AmountDec: "",
+						AssetId:   assetId,
+					}
+					fromTrxDetailArr = append(fromTrxDetailArr, fromTrxDetail)
+
+					if feeInt>0 {
+						feeTrxDetail := TrxDetail{
+							Addr:      from,
+							Amount:    extrinsic.Fee,
+							AmountDec: "",
+							AssetId:  feeToken.Address,
+						}
+						fromTrxDetailArr = append(fromTrxDetailArr, feeTrxDetail)
+					}
+
+					transaction := Transaction{
+						TxID:             extrinsic.Extrinsic_hash,
+						TimeStamp:        blockTime,
+						From:             from,
+						To:               to,
+						Amount:           amountUint,
+						BlockHeight:      blockHeight,
+						BlockHash:        blockHash,
+						Status:           "0",
+						ToTrxDetailArr:   toTrxDetailArr,
+						FromTrxDetailArr: fromTrxDetailArr,
+						Fee :             fee,
+					}
+
+					transactionMap[extrinsicIndex] = transaction
+				}
+			}
+		}
+	}
+
+	return transactions, blockTime, nil
 }
 
 func GetTransactionInBlock(json *gjson.Result, symbol string) []Transaction {

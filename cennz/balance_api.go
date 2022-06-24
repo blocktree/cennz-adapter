@@ -21,6 +21,7 @@ import (
 	"github.com/imroc/req"
 	"github.com/tidwall/gjson"
 	"math/big"
+	"strconv"
 )
 
 // A Client is a Elastos RPC client. It performs RPCs over HTTP using JSON
@@ -111,4 +112,67 @@ func (c *BalanceApiClient) getApiBalance(addrBalance *AddrBalance, blockHash str
 	addrBalance.Balance = freeBalance
 
 	return addrBalance, nil
+}
+
+// 获取地址余额，加上nonce
+func (c *BalanceApiClient) getApiBalanceWithNonce(address, blockHash, assetId string) (*AddrBalance, error) {
+	addrBalance := &AddrBalance{
+		Address: address,
+		AssetId: assetId,
+		Balance: big.NewInt(0),
+		Free:    big.NewInt(0),
+		Freeze:  big.NewInt(0),
+		Nonce:   0,
+		index:   0,
+		Actived: false,
+	}
+
+	url := "/account/balance?address=" + addrBalance.Address + "&assetid=" + addrBalance.AssetId
+	if len(blockHash)>0 {
+		url += "&blockhash=" + blockHash
+	}
+
+	r, err := c.BalanceApiGetCall(url);
+
+	if err != nil {
+		return nil, err
+	}
+
+	//{"message":"Invalid request"}
+	//{"balance":"190311967221"}
+	message := gjson.Get(r.Raw, "message").String()
+	balanceStr := gjson.Get(r.Raw, "balance").String()
+	nonceStr := gjson.Get(r.Raw, "nonce").String()
+
+	if len(message) > 0 {
+		return nil, errors.New(message)
+	}
+	freeBalance, ok := new(big.Int).SetString(balanceStr, 10)
+	if !ok {
+		return nil, errors.New("wrong balance " + balanceStr)
+	}
+	nonce, err := strconv.ParseUint(nonceStr, 10, 64)
+	if err!=nil {
+		return nil, errors.New("wrong nonce " + nonceStr + ", error : " + err.Error() )
+	}
+
+	addrBalance.Free = freeBalance
+	addrBalance.Freeze = big.NewInt(0)
+	addrBalance.Balance = freeBalance
+	addrBalance.Nonce = nonce
+
+	return addrBalance, nil
+}
+
+// 获取地址余额
+func (c *BalanceApiClient) getBlockByHeight(height uint64) (*Block, error) {
+	url := "/block/getblock?height=" + strconv.FormatUint(height, 10)
+
+	r, err := c.BalanceApiGetCall(url);
+
+	if err != nil {
+		return nil, err
+	}
+
+	return NewBlockFromRpc(r, c.Symbol)
 }
