@@ -220,7 +220,7 @@ func GetTransactionAndBlockTimeInBlock(json *gjson.Result, symbol string) ([]Tra
 		txid := gjson.Get(extrinsicJSON.Raw, "hash").String()
 		args := gjson.Get(extrinsicJSON.Raw, "args").Array()
 
-		log.Debug("section : ", section, "method : ", method, ", txid : ", txid, ", isSigned : ", isSigned, ", args : ", args)
+		//log.Debug("section : ", section, "method : ", method, ", txid : ", txid, ", isSigned : ", isSigned, ", args : ", args)
 
 		//获取这个区块的时间
 		if section == "timestamp" && method=="set" {
